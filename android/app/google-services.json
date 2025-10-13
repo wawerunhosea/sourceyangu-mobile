@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "344664954657",
+    "project_id": "sourceyangu-254",
+    "storage_bucket": "sourceyangu-254.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344664954657:android:4b99d12c7b7f771a679060",
+        "android_client_info": {
+          "package_name": "com.sourceyangu.client"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "344664954657-bksigse0cmkd7ortg1pe7gn3hha39cg0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sourceyangu.client",
+            "certificate_hash": "1c6e9435dbc06ac1c09a08ee42947b827fb9cd67"
+          }
+        },
+        {
+          "client_id": "344664954657-qvmhkp5v4c3stcunpu116ao4h5bn8ojb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxxFGpeFjg0UMNxQIQsKt-ZQU_utmZdJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "344664954657-qvmhkp5v4c3stcunpu116ao4h5bn8ojb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "344664954657-hmg3j9ossr9gfg3t54he9ng5is62se1j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sourceyangu"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344664954657:android:deb4a1bc8b81991a679060",
+        "android_client_info": {
+          "package_name": "com.sourceyangu.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "344664954657-iu4mh7j961egt8hlil2k6g72ar1kjlat.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sourceyangu.com",
+            "certificate_hash": "1c6e9435dbc06ac1c09a08ee42947b827fb9cd67"
+          }
+        },
+        {
+          "client_id": "344664954657-qvmhkp5v4c3stcunpu116ao4h5bn8ojb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxxFGpeFjg0UMNxQIQsKt-ZQU_utmZdJU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "344664954657-qvmhkp5v4c3stcunpu116ao4h5bn8ojb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "344664954657-hmg3j9ossr9gfg3t54he9ng5is62se1j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sourceyangu"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

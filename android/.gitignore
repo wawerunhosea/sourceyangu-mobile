@@ -1,0 +1,72 @@
+gradle-wrapper.jar
+/.gradle
+/captures/
+/gradlew
+/gradlew.bat
+/local.properties
+GeneratedPluginRegistrant.java
+.cxx/
+
+# Remember to never publicly share your keystore.
+# See https://flutter.dev/to/reference-keystore
+key.properties
+**/*.keystore
+**/*.jks
+
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+build/
+flutter_*.png
+*.lock
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Android
+android/app/debug/
+android/app/release/
+android/local.properties
+*.keystore
+
+# iOS
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Pods/
+ios/.symlinks/
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+ios/Runner.xcodeproj/xcuserdata/
+
+# Web
+web/.dart_tool/
+web/build/
+
+# Firebase/Secrets
+.env
+*.firebase/
+firebase-debug.log
+
+# Generated files
+*.log
+*.tmp
+*.swp
+*.bak
+*.orig
+
+# Coverage
+coverage/
+*.lcov
+
+# Production artifacts
+*.apk
+*.ipa
+*.app
+*.aab

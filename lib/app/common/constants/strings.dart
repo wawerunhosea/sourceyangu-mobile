@@ -1,0 +1,26 @@
+const String signIn = 'Sign In';
+const String signUp = 'Sign Up';
+const String createAnAccount = 'Create an account';
+const String firstName = 'First Name';
+const String secondName = 'Second Name';
+const String surname = 'Surname';
+const String phone = 'Phone Number';
+const String email = 'Email';
+const String password = 'Password';
+const String passwordConfirm = 'Re-Enter Password';
+const String requestFirstname = 'Enter First Name';
+const String requestSecondName = 'Enter Second Name';
+const String requestSurname = 'Enter Surname';
+const String requestEmail = 'Enter your email';
+const String requestPhone = 'Enter your Phone Number';
+const String requestPassword = 'Enter your Password';
+const String requestPasswordConfirmation = 'Re-Enter your password';
+const String haveAnAccount = 'Have an Account ?';
+const String dontHaveAnAccount = 'Don\'t have an Account ?';
+const String welcomeText = 'Minimalist Fashion, Modern Individual';
+const String heroText =
+    'Discover the latest trends in fashion with SourceYangu.';
+const String featuredProducts = 'Featured Products';
+const String shopByCategory = 'Shop by Category';
+const String featuredSeason = 'Featured for the Season';
+const String footerText = '© 2024 SourceYangu. All rights reserved.';
