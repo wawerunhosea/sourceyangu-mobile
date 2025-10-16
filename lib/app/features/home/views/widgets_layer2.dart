@@ -7,7 +7,8 @@ import 'package:get/get.dart';
 import 'package:sourceyangu/app/common/constants/colors.dart';
 import 'package:sourceyangu/app/features/auth/controllers/login_controller.dart';
 import 'package:sourceyangu/app/features/auth/controllers/signup_controller.dart';
-import 'package:sourceyangu/app/utils/functions/image_handler.dart';
+import 'package:sourceyangu/app/features/home/views/widgets.dart';
+import 'package:sourceyangu/app/routes/app_routes.dart';
 
 class AccountMenu extends StatelessWidget {
   const AccountMenu({super.key});
@@ -98,66 +99,84 @@ class WebPPreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Preview Image")),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: InteractiveViewer(
-                child: Image.memory(
-                  imageBytes,
-                  fit: BoxFit.contain,
-                  errorBuilder:
-                      (_, __, ___) => const Text("Failed to load image"),
+      body: SafeArea(
+        child: Column(
+          children: [
+            TopBanner(),
+            Expanded(
+              child: Center(
+                child: InteractiveViewer(
+                  child: Image.memory(
+                    imageBytes,
+                    fit: BoxFit.contain,
+                    errorBuilder:
+                        (_, __, ___) => const Text("Failed to load image"),
+                  ),
                 ),
               ),
             ),
-          ),
-          //const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
-            //const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Cancel Button
-                ElevatedButton.icon(
-                  onPressed: () => Get.back(result: null),
-                  //icon: const Icon(Icons.close),
-                  label: const Text("Cancel"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 224, 89, 89),
+            //const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
+
+              //const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Cancel Button
+                  ElevatedButton.icon(
+                    onPressed: () => Get.back(result: null),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    label: const Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      elevation: 6,
+                      shadowColor: Colors.black54,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
-                ),
 
-                // Search Button
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    final result = await uploadWebPImage(imageBytes);
-
-                    if (result != null && result['success'] == true) {
-                      final metadata = result['metadata'] as String;
-
-                      Get.toNamed('/RESULTS', arguments: metadata);
-                    } else {
-                      Get.snackbar(
-                        "Upload Failed",
-                        result?['error'] ?? "Could not upload image",
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.redAccent,
-                        colorText: Colors.white,
+                  // Search Button
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Get.toNamed(
+                        AppRoutes.IMAGESEARCHING,
+                        arguments: {'imageBytes': imageBytes},
                       );
-                    }
-                  },
-                  label: const Text("Search"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 6, 231, 36),
+                    },
+                    icon: const Icon(Icons.search, color: Colors.white),
+                    label: const Text(
+                      "Search",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      elevation: 6,
+                      shadowColor: Colors.orangeAccent,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sourceyangu/app/common/constants/colors.dart';
 import 'package:sourceyangu/app/features/home/views/widgets.dart';
 
 class ResultsScreen extends StatelessWidget {

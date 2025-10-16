@@ -1,4 +1,5 @@
 // Capturing, storing, advanced settings
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -9,16 +10,14 @@ class CameraService {
   final ImagePicker _picker = ImagePicker();
 
   Future<XFile?> captureImage() async {
-    final granted = await PermissionManager.ensure(
-      Permission.camera,
-      'camera_permission',
-    );
+    final granted = await AppPermission.accessCamera();
+
     if (!granted) return null;
     return await _picker.pickImage(source: ImageSource.camera);
   }
 
   Future<XFile?> pickFromGallery(BuildContext context) async {
-    await PermissionManager.ensure(Permission.photos, 'READ_MEDIA_IMAGES');
+    await AppPermission.accessGallery();
 
     try {
       return await _picker.pickImage(source: ImageSource.gallery);
@@ -59,3 +58,11 @@ class ScannerService {
     controller.dispose();
   }
 }
+
+
+  // try {
+  //     print(apiLevel);
+  //     if(apiLevel > 26 && apiLevel < 29){
+  //       await PermissionManager.ensure(Permission.photos, 'READ_MEDIA_IMAGES');
+  //     }
+    // } catch (e) {}

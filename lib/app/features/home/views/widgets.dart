@@ -12,7 +12,9 @@ import 'package:sourceyangu/app/features/home/views/widgets_layer2.dart';
 import 'package:sourceyangu/app/utils/device_utils/camera/camera_display.dart';
 
 class TopBanner extends StatelessWidget {
-  const TopBanner({super.key});
+  const TopBanner({super.key, this.hasShadow = true});
+  final bool hasShadow;
+
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +31,17 @@ class TopBanner extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: whiteMain,
-        boxShadow: [
+        boxShadow:
+            hasShadow
+                ? [
           BoxShadow(
             color: darkThemeGreylight, // Shadow color
             spreadRadius: 0, // How wide the shadow spreads
             blurRadius: 6, // Softness of the shadow
             offset: Offset(0, 6), // Position: x, y
           ),
-        ],
+                ]
+                : [],
       ),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(

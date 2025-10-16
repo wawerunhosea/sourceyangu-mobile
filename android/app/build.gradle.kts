@@ -36,6 +36,13 @@ android {
         targetSdkVersion(35) // Android 15
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Added this for minification
+
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
+
     }
 
     buildTypes {
@@ -43,6 +50,10 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // Added this to reduce size
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

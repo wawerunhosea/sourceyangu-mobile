@@ -7,21 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:sourceyangu/app/utils/device_utils/permission_manager.dart';
 
 Future<File?> imageCropper(XFile imageFile) async {
   try {
-    final hasPhotos = await PermissionManager.ensure(
-      Permission.photos,
-      'READ_MEDIA_IMAGES',
-    );
-    await PermissionManager.ensure(Permission.photos, 'READ_MEDIA_IMAGES');
+    final hasPhotos = await AppPermission.accessGallery();
+    await AppPermission.accessGallery();
     if (!hasPhotos) {
-      throw Exception("Missing media image permission for cropping.");
+      throw Exception(
+        "Permission denied: READ_MEDIA_IMAGES or READ_EXTERNAL_STORAGE not granted.",
+      );
     }
 
-    if (imageFile.path.trim().isNotEmpty) {}
+    if (imageFile.path.trim().isEmpty) {
+      throw Exception("A fatal error has occured");
+    }
 
     final croppedFile = await ImageCropper().cropImage(
       sourcePath: imageFile.path,

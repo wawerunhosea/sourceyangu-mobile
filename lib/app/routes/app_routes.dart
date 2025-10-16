@@ -7,4 +7,5 @@ abstract class AppRoutes {
   static const SIGNIN = '/login';
   static const SIGNUP = '/signup';
   static const RESULTS = '/resultsScreen';
+  static const IMAGESEARCHING = '/imagesearching';
 }
