@@ -23,8 +23,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-
 
         applicationId = "com.sourceyangu.client"
 
@@ -39,9 +37,10 @@ android {
 
         // Added this for minification
 
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a"
-        }
+       // ndk {
+       //     abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+       // }
+
 
     }
 
@@ -50,10 +49,6 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
-            // Added this to reduce size
-            shrinkResources true
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
