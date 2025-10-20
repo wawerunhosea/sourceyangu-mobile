@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -143,6 +145,8 @@ class AuthController extends GetxController {
     if (!result.isSuccess) {
       generalError.value = result.error;
     } else {
+      // Logic to parse user to the backend
+      
       currentUser.value = result.session;
       isLoggedIn.value = true;
       await SessionManager.save(result.session!);
@@ -162,6 +166,8 @@ class AuthController extends GetxController {
       if (!result.isSuccess) {
         generalError.value = result.error;
       } else {
+        // Logic to parse user to the backend
+        
         currentUser.value = result.session;
         isLoggedIn.value = true;
         await SessionManager.save(result.session!);
@@ -185,6 +191,9 @@ class AuthController extends GetxController {
     if (result != null) {
       generalError.value = result;
     } else {
+      // Logic to parse user to the backend
+      //final userData= result.user;
+
       // Navigate to home or onboarding
     }
   }

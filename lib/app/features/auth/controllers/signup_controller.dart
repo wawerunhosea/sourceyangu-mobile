@@ -1,8 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sourceyangu/app/common/constants/api_endpoints.dart';
 import 'package:sourceyangu/app/core/session/session_manager.dart';
 import 'package:sourceyangu/app/data/models/user.dart';
 import 'package:sourceyangu/app/service/authentification_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SignupController extends GetxController {
   // Form fields
@@ -106,7 +111,7 @@ class SignupController extends GetxController {
     return emailError.value == null && passwordError.value == null;
   }
 
-  // Google Sign-In logic
+  // Google Sign-UP logic
 
   Future<void> handleGoogleSignIn() async {
     isLoading.value = true;
@@ -160,6 +165,7 @@ class SignupController extends GetxController {
       generalError.value = result.error;
     } else {
       currentUser.value = result.session;
+
       isLoggedIn.value = true;
       Get.offAllNamed('/home');
     }
@@ -172,5 +178,68 @@ class SignupController extends GetxController {
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.onClose();
+  }
+
+  // Saving user on backend
+
+  Future<String> registerUserOnBackend({
+    required String uid,
+    required String email,
+    required String displayName,
+  }) async {
+    final url = Uri.parse(createUser); // Replace with your actual endpoint
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        // Optional: include Firebase ID token for verification
+        // 'Authorization': 'Bearer $idToken',
+      },
+      body: jsonEncode({
+        'uid': uid,
+        'email': email,
+        'displayName': displayName,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      return 'Some error occured';
+    }
+  }
+
+  Future<Map<String, dynamic>?> updateProfilePicture(
+    Uint8List imageBytes,
+    String uid,
+  ) async {
+    final base64Image = base64Encode(imageBytes);
+
+    Future<http.Response> _attemptUpload() {
+      return http.post(
+        Uri.parse(imageSearch),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'base64': base64Image, 'uid': uid}),
+      );
+    }
+
+    try {
+      http.Response response = await _attemptUpload();
+
+      if (response.statusCode != 200 || response.body.isEmpty) {
+        response = await _attemptUpload(); // Silent retry
+      }
+
+      final json = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && json['metadata'] != null) {
+        return {'error': null, 'image': json['metadata']['url']};
+      }
+    } catch (e) {
+      return {'error': e.toString(), 'image': null};
+    }
+
+    return {'error': 'Upload failed silently', 'image': null};
   }
 }

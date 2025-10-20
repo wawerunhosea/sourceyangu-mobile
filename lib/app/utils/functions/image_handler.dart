@@ -1,14 +1,16 @@
-// Cropping Image
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
+import 'package:sourceyangu/app/common/constants/api_endpoints.dart';
 import 'package:sourceyangu/app/utils/device_utils/permission_manager.dart';
+import 'package:sourceyangu/app/core/session/session_manager.dart';
 
+// Cropping Image
 Future<File?> imageCropper(XFile imageFile) async {
   try {
     final hasPhotos = await AppPermission.accessGallery();
@@ -54,7 +56,7 @@ Future<File?> imageCropper(XFile imageFile) async {
   }
 }
 
-// Compressing Image
+// Converting and Compressing Image
 Future<Uint8List?> compressToWebP(File inputFile) async {
   final compressedImage = await FlutterImageCompress.compressWithFile(
     inputFile.absolute.path,
@@ -69,27 +71,66 @@ Future<Uint8List?> compressToWebP(File inputFile) async {
 // Uploading Image
 Future<Map<String, dynamic>?> uploadWebPImage(Uint8List imageBytes) async {
   try {
-    final base64Image = base64Encode(imageBytes);
+    // 🔐 Load session from storage
+    final session =
+        await SessionManager.load(); // assumes this returns a FirebaseAuthSession or similar
 
-    final response = await http.post(
-      Uri.parse(
-        'https://backend-sourceyangu-phi.vercel.app/api/ai_endpoint.ts',
-      ),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'base64': base64Image}),
-    );
+    if (session == null || session.uid == '') {
+      // 🚫 Session missing — show login prompt
+      Get.snackbar(
+        'Authentication Required',
+        'Please log in to use image search.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+        duration: Duration(seconds: 5),
+        mainButton: TextButton(
+          onPressed: () {
+            Get.offAllNamed('/login'); // Redirect to login page
+          },
+          child: Text(
+            'Login',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        icon: GestureDetector(
+          onTap: () {
+            Get.closeCurrentSnackbar(); // Manually close the snackbar
+          },
+          child: Icon(Icons.close, color: Colors.white),
+        ),
+      );
+      return {'success': false, 'error': 'User not logged in'};
+    }
 
-    final json = jsonDecode(response.body);
+    try {
+      final base64Image = base64Encode(imageBytes);
 
-    if (response.statusCode == 200 && json['metadata'] != null) {
-      return {'success': true, 'metadata': json['metadata']};
-    } else {
-      return {'success': false, 'error': json['error'] ?? 'Unknown error'};
-      //Results returned to Search Button on WidgetLayer2
+      final response = await http.post(
+        Uri.parse(imageSearch),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization':
+              'Bearer ${session.uid}', // Adding the uid to the header
+        },
+        body: jsonEncode({'base64': base64Image}),
+      );
+
+      final json = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && json['metadata'] != null) {
+        return {'success': true, 'metadata': json['metadata']};
+      } else {
+        return {'success': false, 'error': json['error'] ?? 'Unknown error'};
+        //Results returned to Search Button on WidgetLayer2
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
     }
   } catch (e) {
-    return {'success': false, 'error': e.toString()};
+    print('Some auth related error occured');
   }
+  return null;
 }
 
 // DownLoading Image

@@ -17,7 +17,9 @@ class CameraService {
   }
 
   Future<XFile?> pickFromGallery(BuildContext context) async {
-    await AppPermission.accessGallery();
+    final granted = await AppPermission.accessGallery();
+    await AppPermission.accessCamera();
+    if (!granted) return null;
 
     try {
       return await _picker.pickImage(source: ImageSource.gallery);

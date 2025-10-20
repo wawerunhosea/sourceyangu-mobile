@@ -19,8 +19,9 @@ class AccountMenu extends StatelessWidget {
     final SignupController auth2 = Get.find<SignupController>();
 
     return Obx(() {
+      //TODO: Observe user changes
       final user = auth.currentUser.value ?? auth2.currentUser.value;
-      //final userOpt2 = auth2.currentUser.value;
+      
       if (user == null) {
         return SizedBox.shrink();
       }

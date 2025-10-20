@@ -7,6 +7,10 @@ const Color appBarActionColor = Color.fromARGB(0, 0, 0, 255);
 const Color appBarTitlteColor = Color.fromARGB(0, 0, 0, 255);
 const Color whiteMain = Color.fromARGB(255, 255, 255, 255);
 
+const Color colorPrimary = Color(0xFF012747);
+const Color colorSecondary = Color(0xFFF6CF82);
+
+
 const darkThemeGreylight = Color.fromARGB(255, 166, 166, 166);
 const Color darkThemeGreydark = Color.fromARGB(255, 51, 50, 50);
 const Color lightThemeOrange = Color.fromARGB(255, 250, 112, 0);
