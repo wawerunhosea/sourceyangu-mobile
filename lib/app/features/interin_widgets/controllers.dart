@@ -39,11 +39,20 @@ class UploadController extends GetxController {
     isUploading.value = false;
 
     if (result != null && result['success'] == true) {
-      final metadata = result['metadata'] as String;
-      Get.offAllNamed(AppRoutes.RESULTS, arguments: metadata);
-      // ✅ replaces stack
+      final metadata = result['metadata'] ?? {};
+      final exact = metadata['exactMatches'] ?? [];
+      final close = metadata['closeMatches'] ?? [];
+      final broader = metadata['broaderMatches'] ?? [];
+
+      Get.offAllNamed(
+        AppRoutes.SEARCH_RESULTS,
+        arguments: {
+          'exactMatches': exact,
+          'closeMatches': close,
+          'broaderMatches': broader,
+        },
+      );
     } else {
-      Get.back();
       Get.snackbar(
         "Upload Failed",
         result?['error'] ?? "Could not upload image",
@@ -51,6 +60,10 @@ class UploadController extends GetxController {
         backgroundColor: Get.theme.colorScheme.error,
         colorText: Get.theme.colorScheme.onError,
       );
+
+      Future.delayed(Duration(milliseconds: 3000), () {
+        Get.back();
+      });
     }
   }
 

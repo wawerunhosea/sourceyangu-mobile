@@ -140,6 +140,7 @@ class AuthController extends GetxController {
       emailController.text,
       passwordController.text,
     );
+
     isLoading.value = false;
 
     if (!result.isSuccess) {

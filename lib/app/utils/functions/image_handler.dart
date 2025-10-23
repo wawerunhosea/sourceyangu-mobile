@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get/get.dart';
@@ -74,33 +75,12 @@ Future<Map<String, dynamic>?> uploadWebPImage(Uint8List imageBytes) async {
     // 🔐 Load session from storage
     final session =
         await SessionManager.load(); // assumes this returns a FirebaseAuthSession or similar
+    final user = FirebaseAuth.instance.currentUser;
 
-    if (session == null || session.uid == '') {
-      // 🚫 Session missing — show login prompt
-      Get.snackbar(
-        'Authentication Required',
-        'Please log in to use image search.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
-        duration: Duration(seconds: 5),
-        mainButton: TextButton(
-          onPressed: () {
-            Get.offAllNamed('/login'); // Redirect to login page
-          },
-          child: Text(
-            'Login',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ),
-        icon: GestureDetector(
-          onTap: () {
-            Get.closeCurrentSnackbar(); // Manually close the snackbar
-          },
-          child: Icon(Icons.close, color: Colors.white),
-        ),
-      );
-      return {'success': false, 'error': 'User not logged in'};
+    final token = await user?.getIdToken();
+
+    if (session == null || session.uid == '' || token == null) {
+      return {'success': false, 'error': 'Please log in first'};
     }
 
     try {
@@ -110,17 +90,19 @@ Future<Map<String, dynamic>?> uploadWebPImage(Uint8List imageBytes) async {
         Uri.parse(imageSearch),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization':
-              'Bearer ${session.uid}', // Adding the uid to the header
+          'Authorization': 'Bearer $token', // Adding the uid to the header
         },
         body: jsonEncode({'base64': base64Image}),
       );
 
       final json = jsonDecode(response.body);
+      print('📦 Full response body:\n${jsonEncode(json)}');
 
       if (response.statusCode == 200 && json['metadata'] != null) {
+        
         return {'success': true, 'metadata': json['metadata']};
       } else {
+        print('Product Error occured');
         return {'success': false, 'error': json['error'] ?? 'Unknown error'};
         //Results returned to Search Button on WidgetLayer2
       }

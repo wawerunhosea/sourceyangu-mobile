@@ -8,4 +8,6 @@ abstract class AppRoutes {
   static const SIGNUP = '/signup';
   static const RESULTS = '/resultsScreen';
   static const IMAGESEARCHING = '/imagesearching';
+  static const SEARCH_RESULTS = '/results';
+
 }

@@ -274,40 +274,271 @@ class CategoryCard extends StatelessWidget {
   }
 }
 
-class ProductCard extends StatelessWidget {
+
+
+class ProductCard extends StatefulWidget {
   final Product product;
-  const ProductCard({super.key, required this.product});
+  final VoidCallback onAddToCart;
+  final VoidCallback onAddToFavorites;
+  final VoidCallback onAddToConsidering;
+
+  const ProductCard({
+    required this.product,
+    required this.onAddToCart,
+    required this.onAddToFavorites,
+    required this.onAddToConsidering,
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.all(8),
-      elevation: 2,
-      child: Column(
-        children: [
-          Expanded(
-            child:
-                product.imageUrl != null
-                    ? Image.network(product.imageUrl!, fit: BoxFit.cover)
-                    : Icon(Icons.image, size: 64),
-          ),
-          Padding(
-            padding: EdgeInsets.all(8),
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  String selectedVariant = "";
+
+  @override
+  void initState() {
+    super.initState();
+    selectedVariant =
+        widget.product.sizes.isNotEmpty ? widget.product.sizes.first : "";
+  }
+
+  String extractImageUrl(String raw) {
+    final parts = raw.split('.');
+    return parts.length >= 4 ? parts.sublist(3).join('.') : raw;
+  }
+
+  String extractPrice(String variant) {
+    final match = widget.product.price.firstWhere(
+      (p) => p.startsWith(variant),
+      orElse: () => "",
+    );
+    return match.isNotEmpty ? match.split('.').last : "N/A";
+  }
+
+  String extractStock(String variant) {
+    final match = widget.product.stockQuantity.firstWhere(
+      (s) => s.startsWith(variant),
+      orElse: () => "",
+    );
+    return match.isNotEmpty ? match.split('.').last : "0";
+  }
+
+  bool hasOffer(String variant) {
+    return widget.product.onOffer.any((o) => o.toString().contains(variant));
+  }
+
+  void showCareInstructions() {
+    showModalBottomSheet(
+      context: context,
+      builder:
+          (_) => Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  product.name,
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                const Text(
+                  "Care Instructions",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                Text('\$${product.price.toStringAsFixed(2)}'),
+                const SizedBox(height: 12),
+                ...widget.product.careInstruction.map(
+                  (c) => ListTile(title: Text(c)),
+                ),
               ],
             ),
           ),
-        ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = extractImageUrl(
+      widget.product.images.firstWhere(
+        (img) => img.contains(selectedVariant),
+        orElse: () => widget.product.images.first,
+      ),
+    );
+    final price = extractPrice(selectedVariant);
+    final stock = extractStock(selectedVariant);
+    final inStock = widget.product.inStock;
+
+    return Dismissible(
+      key: Key(widget.product.id),
+      background: Container(
+        color: Colors.green,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        child: const Icon(Icons.visibility),
+      ),
+      secondaryBackground: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.favorite),
+      ),
+      onDismissed: (direction) {
+        if (direction == DismissDirection.startToEnd) {
+          widget.onAddToConsidering();
+        } else {
+          widget.onAddToFavorites();
+        }
+      },
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image + badges
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  child: Image.network(
+                    imageUrl,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                if (hasOffer(selectedVariant))
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "On Offer",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (widget.product.isExactMatch)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        "Exact Match",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+
+            // Info
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.product.brand,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    widget.product.design,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "KES $price",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    inStock ? "In Stock ($stock left)" : "Out of Stock",
+                    style: TextStyle(
+                      color: inStock ? Colors.green : Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  if (widget.product.rating != null)
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 18),
+                        Text("${widget.product.rating}/5"),
+                      ],
+                    ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    children:
+                        widget.product.tags
+                            .map((tag) => Chip(label: Text(tag)))
+                            .toList(),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Variant selector
+                  if (widget.product.sizes.isNotEmpty)
+                    DropdownButton<String>(
+                      value: selectedVariant,
+                      items:
+                          widget.product.sizes.map((variant) {
+                            return DropdownMenuItem(
+                              value: variant,
+                              child: Text(variant),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => selectedVariant = value);
+                        }
+                      },
+                    ),
+
+                  const SizedBox(height: 12),
+
+                  // Actions
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.info_outline),
+                        onPressed: showCareInstructions,
+                      ),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.add_shopping_cart),
+                        label: const Text("Add to Cart"),
+                        onPressed: widget.onAddToCart,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
 
 class FeaturedProducts extends StatelessWidget {
   final HomeController controller = Get.find();
@@ -325,7 +556,13 @@ class FeaturedProducts extends StatelessWidget {
           physics: NeverScrollableScrollPhysics(),
           children: List.generate(
             4,
-            (i) => ProductCard(product: controller.featuredProducts[i]),
+            (i) => ProductCard(
+              //TODO: check out if correct
+              product: controller.featuredProducts[i],
+              onAddToCart: () {},
+              onAddToFavorites: () {},
+              onAddToConsidering: () {},
+            ),
           ),
         ),
       ],

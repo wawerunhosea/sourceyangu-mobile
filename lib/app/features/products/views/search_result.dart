@@ -9,18 +9,17 @@ class ResultsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final metadata = Get.arguments as String?;
     final labels = [
-      "Color",
+      "Primary Color",
       "Pattern",
       "Design",
       "Material",
       "Type",
       "Season",
-      "OccasionType",
+      "Secondary Color",
       "Occasion",
       "Brand",
       "SleeveLength",
-      "UserRequestProperty1",
-      "UserRequestProperty2",
+      "Target Audience",
     ];
 
     final values = metadata?.split(',') ?? [];
