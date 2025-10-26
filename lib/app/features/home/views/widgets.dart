@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sourceyangu/app/common/constants/colors.dart';
 import 'package:sourceyangu/app/common/constants/resources.dart';
+import 'package:sourceyangu/app/common/constants/sizes.dart';
 import 'package:sourceyangu/app/common/constants/strings.dart';
 import 'package:sourceyangu/app/data/models/product.dart';
 import 'package:sourceyangu/app/features/auth/controllers/login_controller.dart';
 import 'package:sourceyangu/app/features/auth/controllers/signup_controller.dart';
 import 'package:sourceyangu/app/features/home/controllers/home_controllers.dart';
 import 'package:sourceyangu/app/features/home/views/widgets_layer2.dart';
+import 'package:sourceyangu/app/features/products/controllers/product_controller.dart';
+import 'package:sourceyangu/app/features/products/views/products_helper_functions.dart';
+import 'package:sourceyangu/app/features/products/views/search_results_grid.dart';
 import 'package:sourceyangu/app/utils/device_utils/camera/camera_display.dart';
 
 class TopBanner extends StatelessWidget {
@@ -72,6 +76,8 @@ class TopBanner extends StatelessWidget {
   }
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+
 // Menu Items
 
 class MenuButton extends StatelessWidget {
@@ -115,6 +121,9 @@ class MenuButton extends StatelessWidget {
     );
   }
 }
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Hero Section with Search Bar
 
 class HeroSection extends StatelessWidget {
   const HeroSection({super.key});
@@ -173,6 +182,9 @@ class HeroSection extends StatelessWidget {
   }
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Search Bar with Camera Icon
+
 class CameraSearchBar extends StatelessWidget {
   const CameraSearchBar({super.key});
 
@@ -219,6 +231,9 @@ class CameraSearchBar extends StatelessWidget {
   }
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Shop by Category Section
+
 class ShopByCategory extends StatelessWidget {
   ShopByCategory({super.key});
 
@@ -249,6 +264,8 @@ class ShopByCategory extends StatelessWidget {
     );
   }
 }
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Category Card Widget
 
 class CategoryCard extends StatelessWidget {
   final String title;
@@ -274,260 +291,93 @@ class CategoryCard extends StatelessWidget {
   }
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Product Card Widget
 
-
-class ProductCard extends StatefulWidget {
+class ProductCard extends StatelessWidget {
   final Product product;
-  final VoidCallback onAddToCart;
-  final VoidCallback onAddToFavorites;
-  final VoidCallback onAddToConsidering;
+  final VoidCallback onTap;
+  final VoidCallback onFavorite;
 
   const ProductCard({
     required this.product,
-    required this.onAddToCart,
-    required this.onAddToFavorites,
-    required this.onAddToConsidering,
+    required this.onTap,
+    required this.onFavorite,
     super.key,
   });
 
   @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  String selectedVariant = "";
-
-  @override
-  void initState() {
-    super.initState();
-    selectedVariant =
-        widget.product.sizes.isNotEmpty ? widget.product.sizes.first : "";
-  }
-
-  String extractImageUrl(String raw) {
-    final parts = raw.split('.');
-    return parts.length >= 4 ? parts.sublist(3).join('.') : raw;
-  }
-
-  String extractPrice(String variant) {
-    final match = widget.product.price.firstWhere(
-      (p) => p.startsWith(variant),
-      orElse: () => "",
-    );
-    return match.isNotEmpty ? match.split('.').last : "N/A";
-  }
-
-  String extractStock(String variant) {
-    final match = widget.product.stockQuantity.firstWhere(
-      (s) => s.startsWith(variant),
-      orElse: () => "",
-    );
-    return match.isNotEmpty ? match.split('.').last : "0";
-  }
-
-  bool hasOffer(String variant) {
-    return widget.product.onOffer.any((o) => o.toString().contains(variant));
-  }
-
-  void showCareInstructions() {
-    showModalBottomSheet(
-      context: context,
-      builder:
-          (_) => Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Care Instructions",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                ...widget.product.careInstruction.map(
-                  (c) => ListTile(title: Text(c)),
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final imageUrl = extractImageUrl(
-      widget.product.images.firstWhere(
-        (img) => img.contains(selectedVariant),
-        orElse: () => widget.product.images.first,
-      ),
-    );
-    final price = extractPrice(selectedVariant);
-    final stock = extractStock(selectedVariant);
-    final inStock = widget.product.inStock;
-
-    return Dismissible(
-      key: Key(widget.product.id),
-      background: Container(
-        color: Colors.green,
-        alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(left: 20),
-        child: const Icon(Icons.visibility),
-      ),
-      secondaryBackground: Container(
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: const Icon(Icons.favorite),
-      ),
-      onDismissed: (direction) {
-        if (direction == DismissDirection.startToEnd) {
-          widget.onAddToConsidering();
-        } else {
-          widget.onAddToFavorites();
-        }
-      },
+    final rawUrl = product.images[0];
+    final variant = ProductVariantImage.fromRaw(rawUrl);
+    final imageUrl = variant.imageUrl;
+    print(imageUrl);
+    return GestureDetector(
+      onTap: onTap,
       child: Card(
-        elevation: 4,
+        color: Colors.grey[50],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        elevation: 3,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image + badges
             Stack(
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
-                  child: Image.network(
-                    imageUrl,
-                    height: 180,
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    height: 300,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
                 ),
-                if (hasOffer(selectedVariant))
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(
+                        180,
+                      ), // semi-transparent white
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        product.isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
                         color: Colors.redAccent,
-                        borderRadius: BorderRadius.circular(8),
+                        size: 15,
                       ),
-                      child: const Text(
-                        "On Offer",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      onPressed: onFavorite,
                     ),
                   ),
-                if (widget.product.isExactMatch)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        "Exact Match",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
+                ),
               ],
             ),
-
-            // Info
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.product.brand,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    product.design,
+                    style: TextTheme.of(
+                      context,
+                    ).titleMedium?.copyWith(color: darkThemeGreydark),
+                    //Theme.of(context).textTheme.bodyMedium,
                   ),
+                  const SizedBox(height: 4),
                   Text(
-                    widget.product.design,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    "KES $price",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    inStock ? "In Stock ($stock left)" : "Out of Stock",
-                    style: TextStyle(
-                      color: inStock ? Colors.green : Colors.red,
+                    "Ksh ${extractPrice(product)}",
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: orangeMain,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  if (widget.product.rating != null)
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 18),
-                        Text("${widget.product.rating}/5"),
-                      ],
-                    ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    children:
-                        widget.product.tags
-                            .map((tag) => Chip(label: Text(tag)))
-                            .toList(),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Variant selector
-                  if (widget.product.sizes.isNotEmpty)
-                    DropdownButton<String>(
-                      value: selectedVariant,
-                      items:
-                          widget.product.sizes.map((variant) {
-                            return DropdownMenuItem(
-                              value: variant,
-                              child: Text(variant),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => selectedVariant = value);
-                        }
-                      },
-                    ),
-
-                  const SizedBox(height: 12),
-
-                  // Actions
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.info_outline),
-                        onPressed: showCareInstructions,
-                      ),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.add_shopping_cart),
-                        label: const Text("Add to Cart"),
-                        onPressed: widget.onAddToCart,
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -539,36 +389,127 @@ class _ProductCardState extends State<ProductCard> {
   }
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Product Detail View
 
-class FeaturedProducts extends StatelessWidget {
-  final HomeController controller = Get.find();
+class ProductDetailView extends StatelessWidget {
+  final Product product;
 
-  FeaturedProducts({super.key});
+  const ProductDetailView({required this.product, super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionTitle('Featured Products'),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          children: List.generate(
-            4,
-            (i) => ProductCard(
-              //TODO: check out if correct
-              product: controller.featuredProducts[i],
-              onAddToCart: () {},
-              onAddToFavorites: () {},
-              onAddToConsidering: () {},
+    final rawUrl = product.images[0];
+    final variant = ProductVariantImage.fromRaw(rawUrl);
+
+    try {
+      final imageUrl = variant.imageUrl;
+
+      return Scaffold(
+        appBar: AppBar(title: Text(product.design)),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Hero(
+              tag: product.id,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  height: 280,
+                  fit: BoxFit.cover,
+                  placeholder:
+                      (context, url) =>
+                          const Center(child: CircularProgressIndicator()),
+                  errorWidget:
+                      (context, url, error) => Image.network(
+                        'https://i.pinimg.com/736x/4a/e3/22/4ae322bf6dac581b4d0f50954e63b62f.jpg',
+                        height: 280,
+                        fit: BoxFit.cover,
+                      ),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(height: 16),
+            Text(
+              "Ksh ${extractPrice(product)}",
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              children:
+                  product.tags.map((tag) => Chip(label: Text(tag))).toList(),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text("Added to cart")));
+              },
+              icon: const Icon(Icons.shopping_cart),
+              label: const Text("Add to Cart"),
+            ),
+          ],
         ),
-      ],
+      );
+    } catch (e) {
+      return Text(e.toString());
+    }
+  }
+}
+
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Featured Products Section
+
+class FeaturedProducts extends StatelessWidget {
+  final HomeController homeController = Get.find();
+  final ProductController productController = Get.find();
+
+  FeaturedProducts({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(
+      () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionTitle('Featured Products'),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.6,
+            children: List.generate(homeController.featuredProducts.length, (
+              i,
+            ) {
+              final product = homeController.featuredProducts[i];
+              return Hero(
+                tag: product.id,
+                child: ProductCard(
+                  product: product,
+                  onTap:
+                      () => Get.to(() => ProductDetailView(product: product)),
+                  onFavorite: () => productController.toggleFavorite(product),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 24),
+          const Divider(thickness: 1, indent: 16, endIndent: 16),
+        ],
+      ),
     );
   }
 }
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Featured product by Season Section
 
 class FeaturedSeason extends StatelessWidget {
   const FeaturedSeason({super.key});
@@ -591,6 +532,9 @@ class FeaturedSeason extends StatelessWidget {
     );
   }
 }
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Footer Section
 
 class FooterSection extends StatelessWidget {
   const FooterSection({super.key});
@@ -630,6 +574,9 @@ class FooterSection extends StatelessWidget {
     );
   }
 }
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Section Title Widget
 
 class SectionTitle extends StatelessWidget {
   final String title;

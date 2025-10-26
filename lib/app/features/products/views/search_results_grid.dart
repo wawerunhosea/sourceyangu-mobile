@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sourceyangu/app/common/constants/colors.dart';
 import 'package:sourceyangu/app/data/models/product.dart';
 import 'package:sourceyangu/app/features/home/views/widgets.dart';
+import 'package:sourceyangu/app/features/products/views/products_helper_functions.dart';
 import '../controllers/product_controller.dart';
 // import '../widgets/product_card.dart';
 // import '../models/product.dart';
@@ -26,76 +28,59 @@ class ProductResultsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Results"),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort),
-            onSelected: controller.setSort,
-            itemBuilder:
-                (context) => const [
-                  PopupMenuItem(
-                    value: "priceLow",
-                    child: Text("Price: Low to High"),
+    return SafeArea(
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => Get.toNamed("/cart"),
+          icon: const Icon(Icons.shopping_cart),
+          label: const Text("Cart"),
+        ),
+        body: Obx(
+          () => CustomScrollView(
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: PinnedBannerDelegate(child: TopBanner()),
+              ),
+              if (controller.exactMatches.isEmpty &&
+                  !controller.isLoading.value &&
+                  (controller.closeMatches.isNotEmpty ||
+                      controller.broaderMatches.isNotEmpty))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      "0 exact matches. Check out alternatives",
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
                   ),
-                  PopupMenuItem(
-                    value: "priceHigh",
-                    child: Text("Price: High to Low"),
-                  ),
-                  PopupMenuItem(value: "rating", child: Text("Top Rated")),
-                ],
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Get.toNamed("/cart"),
-        icon: const Icon(Icons.shopping_cart),
-        label: const Text("Cart"),
-      ),
-      body: Obx(
-        () => CustomScrollView(
-          slivers: [
-            _buildFilterChips(),
-            if (controller.exactMatches.isEmpty && !controller.isLoading.value)
+                ),
+              if (controller.exactMatches.isNotEmpty &&
+                  !controller.isLoading.value)
+                _buildSection("🎯 Perfect Picks", controller.exactMatches),
+              if (controller.closeMatches.isNotEmpty &&
+                  !controller.isLoading.value)
+                _buildSection("✨ Closely Aligned", controller.closeMatches),
+              if (controller.broaderMatches.isNotEmpty &&
+                  !controller.isLoading.value)
+                _buildSection("🧭 Worth Exploring", controller.broaderMatches),
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    "We couldn’t find a perfect match, but here are some great alternatives.",
-                    style: Theme.of(context).textTheme.bodyLarge,
+                child: ElevatedButton.icon(
+                  onPressed: () => Get.offAllNamed('/home'),
+                  icon: const Icon(Icons.home),
+                  label: const Text("Back to Home"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: blackMain,
+                    foregroundColor: Colors.amberAccent,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ),
-            _buildSection("🎯 Perfect Picks", controller.exactMatches),
-            _buildSection("✨ Closely Aligned", controller.closeMatches),
-            _buildSection("🧭 Worth Exploring", controller.broaderMatches),
-          ],
-        ),
-      ),
-    );
-  }
-
-  SliverToBoxAdapter _buildFilterChips() {
-    final tags = ['cotton', 'ecoFriendly', 'stripes', 'denim', 'normalDay'];
-    return SliverToBoxAdapter(
-      child: Obx(
-        () => SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            children:
-                tags.map((tag) {
-                  final isSelected = controller.selectedFilter.value == tag;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(tag),
-                      selected: isSelected,
-                      onSelected: (_) => controller.setFilter(tag),
-                    ),
-                  );
-                }).toList(),
+              SliverToBoxAdapter(child: FooterSection()),
+            ],
           ),
         ),
       ),
@@ -165,20 +150,6 @@ class ProductResultsView extends StatelessWidget {
                           Get.context!,
                         ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                       ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => Get.offAllNamed('/home'),
-                        icon: const Icon(Icons.home),
-                        label: const Text("Back to Home"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: blackMain,
-                          foregroundColor: whiteMain,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 )
@@ -190,20 +161,23 @@ class ProductResultsView extends StatelessWidget {
                   itemCount: products.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.7,
+                    childAspectRatio: 0.53,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                   ),
                   itemBuilder: (context, index) {
                     final sortedProducts = controller.applySort(products);
                     final product = sortedProducts[index];
+                    // Buidng each product card
                     return Hero(
                       tag: product.id,
                       child: ProductCard(
                         product: product,
-                        onAddToCart: () {},
-                        onAddToFavorites: () {},
-                        onAddToConsidering: () {},
+                        onTap:
+                            () => Get.to(
+                              () => ProductDetailView(product: product),
+                            ),
+                        onFavorite: () => controller.toggleFavorite(product),
                       ),
                     );
                   },
@@ -211,7 +185,7 @@ class ProductResultsView extends StatelessWidget {
 
               // Divider between sections
               const SizedBox(height: 24),
-              const Divider(thickness: 1, indent: 16, endIndent: 16),
+              // const Divider(thickness: 1, indent: 16, endIndent: 16),
             ],
           ),
         ),
@@ -259,4 +233,31 @@ class ProductResultsView extends StatelessWidget {
       ],
     );
   }
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// Pinned Banner Delegate
+
+class PinnedBannerDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  PinnedBannerDelegate({required this.child});
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return child;
+  }
+
+  @override
+  double get maxExtent => 100; // Adjust to your banner height
+  @override
+  double get minExtent => 100;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      false;
 }

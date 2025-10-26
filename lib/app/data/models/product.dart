@@ -23,7 +23,7 @@ class Product {
 
   // Optional enhancements
   final double? rating; // ⭐ user rating
-  final bool isFavorite; // ❤️ saved by user
+  bool isFavorite; // ❤️ saved by user
   final bool isConsidering; // 👀 soft interest
   final bool isExactMatch; // ✅ match tier flag
 

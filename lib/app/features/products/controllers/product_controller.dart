@@ -54,4 +54,18 @@ class ProductController extends GetxController {
         return products;
     }
   }
+
+  void toggleFavorite(Product product) {
+    final toggle = (RxList<Product> list) {
+      final index = list.indexWhere((p) => p.id == product.id);
+      if (index != -1) {
+        list[index].isFavorite = !list[index].isFavorite;
+        list.refresh(); // triggers UI update
+      }
+    };
+
+    toggle(exactMatches);
+    toggle(closeMatches);
+    toggle(broaderMatches);
+  }
 }
