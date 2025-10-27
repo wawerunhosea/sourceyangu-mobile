@@ -32,6 +32,10 @@ class ProductVariantImage {
     required this.imageUrl,
   });
 
+  /// Semantic key used for grouping variants by color
+  String get colorKey => '$primaryColor.$secondaryColor';
+
+  /// Factory constructor to parse raw string format: color1.color2.size.imageUrl
   factory ProductVariantImage.fromRaw(String raw) {
     print('Getting image link');
     final parts = raw.split('.');

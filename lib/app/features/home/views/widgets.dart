@@ -338,12 +338,18 @@ class ProductCard extends StatelessWidget {
                   top: 8,
                   right: 8,
                   child: Container(
-                    
+                    height: 30,
+                    width: 30,
                     decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(
-                        180,
-                      ), // semi-transparent white
+                      color: Colors.white, // semi-transparent white
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: IconButton(
                       icon: Icon(
@@ -399,66 +405,434 @@ class ProductDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rawUrl = product.images[0];
-    final variant = ProductVariantImage.fromRaw(rawUrl);
+    final controller = Get.put(ProductDetailController(product));
 
-    try {
-      final imageUrl = variant.imageUrl;
-
-      return Scaffold(
-        appBar: AppBar(title: Text(product.design)),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Hero(
-              tag: product.id,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  height: 280,
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) =>
-                          const Center(child: CircularProgressIndicator()),
-                  errorWidget:
-                      (context, url, error) => Image.network(
-                        'https://i.pinimg.com/736x/4a/e3/22/4ae322bf6dac581b4d0f50954e63b62f.jpg',
-                        height: 280,
-                        fit: BoxFit.cover,
-                      ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              "Ksh ${extractPrice(product)}",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children:
-                  product.tags.map((tag) => Chip(label: Text(tag))).toList(),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            color: darkThemeGreydark,
+            onPressed: () => Get.back(),
+          ),
+          title: Text(
+            product.design,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(color: blackMain),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.favorite_border),
+              color: Colors.redAccent,
               onPressed: () {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text("Added to cart")));
+                // TODO: Handle favorite toggle
               },
-              icon: const Icon(Icons.shopping_cart),
-              label: const Text("Add to Cart"),
+            ),
+            IconButton(
+              icon: const Icon(Icons.shopping_cart_outlined),
+              color: darkThemeGreydark,
+              onPressed: () {
+                // TODO: Navigate to cart
+              },
             ),
           ],
         ),
-      );
-    } catch (e) {
-      return Text(e.toString());
-    }
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 16.0, 10, 16.0),
+            child: Obx(
+              () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image with overlayed thumbnails
+                  Stack(
+                    children: [
+                      Hero(
+                        tag: product.id,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: CachedNetworkImage(
+                              key: ValueKey(
+                                controller.selectedVariant.value.imageUrl,
+                              ),
+                              imageUrl:
+                                  controller.selectedVariant.value.imageUrl,
+                              height: 550,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                              errorWidget:
+                                  (context, url, error) => Image.network(
+                                    'https://i.pinimg.com/736x/4a/e3/22/4ae322bf6dac581b4d0f50954e63b62f.jpg',
+                                    height: 280,
+                                    fit: BoxFit.cover,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 12,
+                        left: 12,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children:
+                              controller.variants.map((v) {
+                                final isSelected =
+                                    v.imageUrl ==
+                                    controller.selectedVariant.value.imageUrl;
+                                return GestureDetector(
+                                  onTap: () => controller.selectVariant(v),
+                                  child: AnimatedScale(
+                                    scale: isSelected ? 1.1 : 1.0,
+                                    duration: const Duration(milliseconds: 200),
+                                    curve: Curves.easeOut,
+                                    child: Container(
+                                      margin: const EdgeInsets.only(bottom: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withAlpha(220),
+                                        border: Border.all(
+                                          color:
+                                              isSelected
+                                                  ? Colors.blue
+                                                  : Colors.grey.shade300,
+                                          width: 2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withAlpha(100),
+                                            blurRadius: 4,
+                                            offset: const Offset(1, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: CachedNetworkImage(
+                                          imageUrl: v.imageUrl,
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  DropdownButton<String>(
+                    value:
+                        controller.selectedSize.value.isNotEmpty &&
+                                controller.availableSizes.contains(
+                                  controller.selectedSize.value,
+                                )
+                            ? controller.selectedSize.value
+                            : null,
+                    hint: const Text("Select Size"),
+                    items:
+                        controller.availableSizes.map((size) {
+                          return DropdownMenuItem<String>(
+                            value: size,
+                            child: Text("Size $size"),
+                          );
+                        }).toList(),
+                    onChanged: controller.selectSize,
+                  ),
+                  const SizedBox(height: 16),
+          
+                  // Rating + Quantity
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: const [
+                          Icon(Icons.star, color: Colors.amber),
+                          SizedBox(width: 4),
+                          Text("5.0"),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Text("Quantity: "),
+                          DropdownButton<int>(
+                            value: controller.quantity.value,
+                            items:
+                                List.generate(10, (i) => i + 1)
+                                    .map(
+                                      (q) => DropdownMenuItem(
+                                        value: q,
+                                        child: Text("$q"),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged: controller.setQuantity,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Price
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      "Ksh ${controller.price}",
+                      key: ValueKey(controller.price),
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Description
+                  Text(
+                    "Description",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum.",
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
+
+// class ProductDetailView extends StatelessWidget {
+//   final Product product;
+
+//   const ProductDetailView({required this.product, super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final controller = Get.put(ProductDetailController(product));
+
+//     return SafeArea(
+//       child: Scaffold(
+//         appBar: AppBar(
+//           leading: IconButton(
+//             icon: const Icon(Icons.arrow_back),
+//             color: darkThemeGreydark,
+//             onPressed: () => Get.back(),
+//           ),
+//           title: Text(
+//             product.design,
+//             style: Theme.of(
+//               context,
+//             ).textTheme.headlineSmall?.copyWith(color: blackMain),
+//           ),
+//           actions: [
+//             IconButton(
+//               icon: const Icon(Icons.favorite_border),
+//               color: Colors.redAccent,
+//               onPressed: () {
+//                 // TODO: Handle favorite toggle
+//               },
+//             ),
+//             IconButton(
+//               icon: const Icon(Icons.shopping_cart_outlined),
+//               color: darkThemeGreydark,
+//               onPressed: () {
+//                 // TODO: Navigate to cart
+//               },
+//             ),
+//           ],
+//         ),
+//         body: Padding(
+//           padding: const EdgeInsets.fromLTRB(10, 16.0, 10, 16.0),
+//           child: Obx(
+//             () => Column(
+//               children: [
+//                 // Top section: Variants + Image
+//                 Row(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // Left column: Variants + Size selector
+//                     Column(
+//                       children: [
+//                         // Variant thumbnails
+//                         SizedBox(
+//                           width: 60,
+//                           child: Column(
+//                             children:
+//                                 controller.variants.map((v) {
+//                                   final isSelected =
+//                                       v.imageUrl ==
+//                                       controller.selectedVariant.value.imageUrl;
+//                                   return GestureDetector(
+//                                     onTap: () => controller.selectVariant(v),
+//                                     child: Container(
+//                                       margin: const EdgeInsets.symmetric(
+//                                         vertical: 4,
+//                                       ),
+//                                       decoration: BoxDecoration(
+//                                         border: Border.all(
+//                                           color:
+//                                               isSelected
+//                                                   ? Colors.blue
+//                                                   : Colors.grey.shade300,
+//                                           width: 2,
+//                                         ),
+//                                         borderRadius: BorderRadius.circular(6),
+//                                       ),
+//                                       child: ClipRRect(
+//                                         borderRadius: BorderRadius.circular(6),
+//                                         child: CachedNetworkImage(
+//                                           imageUrl: v.imageUrl,
+//                                           width: 60,
+//                                           height: 60,
+//                                           fit: BoxFit.cover,
+//                                         ),
+//                                       ),
+//                                     ),
+//                                   );
+//                                 }).toList(),
+//                           ),
+//                         ),
+//                         const SizedBox(height: 12),
+
+//                         // Size selector
+//                         DropdownButton<String>(
+//                           value:
+//                               controller.selectedSize.value.isNotEmpty &&
+//                                       product.sizes.contains(
+//                                         controller.selectedSize.value,
+//                                       )
+//                                   ? controller.selectedSize.value
+//                                   : null,
+//                           items:
+//                               product.sizes
+//                                   .toSet() // removes duplicates
+//                                   .map(
+//                                     (size) => DropdownMenuItem<String>(
+//                                       value: size,
+//                                       child: Text(size),
+//                                     ),
+//                                   )
+//                                   .toList(),
+//                           onChanged: controller.selectSize,
+//                         ),
+//                       ],
+//                     ),
+//                     //const SizedBox(width: 16),
+//                     // Right column: Main image
+//                     Expanded(
+//                       child: Hero(
+//                         tag: product.id,
+//                         child: ClipRRect(
+//                           borderRadius: BorderRadius.circular(12),
+//                           child: AnimatedSwitcher(
+//                             duration: const Duration(milliseconds: 300),
+//                             child: CachedNetworkImage(
+//                               key: ValueKey(
+//                                 controller.selectedVariant.value.imageUrl,
+//                               ),
+//                               imageUrl:
+//                                   controller.selectedVariant.value.imageUrl,
+//                               height: 550,
+//                               fit: BoxFit.cover,
+//                               placeholder:
+//                                   (context, url) => const Center(
+//                                     child: CircularProgressIndicator(),
+//                                   ),
+//                               errorWidget:
+//                                   (context, url, error) => Image.network(
+//                                     'https://i.pinimg.com/736x/4a/e3/22/4ae322bf6dac581b4d0f50954e63b62f.jpg',
+//                                     height: 280,
+//                                     fit: BoxFit.cover,
+//                                   ),
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//                 const SizedBox(height: 16),
+//                 // Rating + Quantity row
+//                 Row(
+//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                   children: [
+//                     Row(
+//                       children: const [
+//                         Icon(Icons.star, color: Colors.amber),
+//                         SizedBox(width: 4),
+//                         Text("5.0"),
+//                       ],
+//                     ),
+//                     Row(
+//                       children: [
+//                         const Text("Quantity: "),
+//                         DropdownButton<int>(
+//                           value: controller.quantity.value,
+//                           items:
+//                               List.generate(10, (i) => i + 1)
+//                                   .map(
+//                                     (q) => DropdownMenuItem(
+//                                       value: q,
+//                                       child: Text("$q"),
+//                                     ),
+//                                   )
+//                                   .toList(),
+//                           onChanged: controller.setQuantity,
+//                         ),
+//                       ],
+//                     ),
+//                   ],
+//                 ),
+//                 const SizedBox(height: 12),
+//                 // Price
+//                 Align(
+//                   alignment: Alignment.centerLeft,
+//                   child: AnimatedSwitcher(
+//                     duration: const Duration(milliseconds: 300),
+//                     child: Text(
+//                       "Ksh ${controller.price}",
+//                       key: ValueKey(controller.price),
+//                       style: Theme.of(context).textTheme.titleLarge,
+//                     ),
+//                   ),
+//                 ),
+//                 const SizedBox(height: 16),
+//                 // Description
+//                 Align(
+//                   alignment: Alignment.centerLeft,
+//                   child: Text(
+//                     "Description",
+//                     style: Theme.of(context).textTheme.titleMedium,
+//                   ),
+//                 ),
+//                 const SizedBox(height: 8),
+//                 const Text(
+//                   "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum.",
+//                   style: TextStyle(color: Colors.black54),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------

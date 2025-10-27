@@ -4,10 +4,7 @@ import 'package:get/get.dart';
 import 'package:sourceyangu/app/common/constants/colors.dart';
 import 'package:sourceyangu/app/data/models/product.dart';
 import 'package:sourceyangu/app/features/home/views/widgets.dart';
-import 'package:sourceyangu/app/features/products/views/products_helper_functions.dart';
 import '../controllers/product_controller.dart';
-// import '../widgets/product_card.dart';
-// import '../models/product.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ProductResultsView extends StatelessWidget {
@@ -176,6 +173,9 @@ class ProductResultsView extends StatelessWidget {
                         onTap:
                             () => Get.to(
                               () => ProductDetailView(product: product),
+                              opaque: false,
+                              fullscreenDialog: true,
+
                             ),
                         onFavorite: () => controller.toggleFavorite(product),
                       ),
